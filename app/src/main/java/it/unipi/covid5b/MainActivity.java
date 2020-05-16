@@ -43,12 +43,15 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-/*public class MyReceiver extends BroadcastReceiver {
+public class MyBroadcastReceiver extends BroadcastReceiver {
+    private static final String TAG = "MtBroadcastReceiver";
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("MY_RECEIVER", "I just received home signal");
+        StringBuilder msg = new StringBuilder();
+        msg.append("Action: " + intent.getAction() + "\n");
+        Log.d(TAG, "I just received home signal");
     }
-}*/
+
 
 
 
