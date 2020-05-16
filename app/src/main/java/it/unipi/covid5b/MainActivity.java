@@ -32,11 +32,11 @@ public class MainActivity extends AppCompatActivity {
                 Quindi mando l'intent broadcast
                 MainActivity.send();
                 */
-                send()
+                send();
             }
         }.start();
     }
-    public static void send() {
+    public void send() {
         Intent intent=new Intent(getApplicationContext(), /*risultato del classificatore*/);
         intent.setFlags(0);
         sendBroadcast(intent);
