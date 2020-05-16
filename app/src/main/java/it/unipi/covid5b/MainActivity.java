@@ -27,13 +27,20 @@ public class MainActivity extends AppCompatActivity {
             }
             public void onFinish() {
                 Log.d("MY_WASH", "Non ti sei lavato le mani");
-                //Se arrivo qui, scade il timer, non è stato effettuato il lavaggio delle mani
-                //Quindi mando l'intent broadcast
-                //MainActivity.send();
+                /*
+                Se arrivo qui, scade il timer, non è stato effettuato il lavaggio delle mani
+                Quindi mando l'intent broadcast
+                MainActivity.send();
+                */
+                send()
             }
         }.start();
     }
-    public static void send() {}
+    public static void send() {
+        Intent intent=new Intent(getApplicationContext(), /*risultato del classificatore*/);
+        intent.setFlags(0);
+        sendBroadcast(intent);
+    }
 }
 
 /*public class MyReceiver extends BroadcastReceiver {
