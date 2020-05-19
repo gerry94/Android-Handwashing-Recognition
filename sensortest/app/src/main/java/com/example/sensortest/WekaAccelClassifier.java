@@ -7,7 +7,9 @@ public class WekaAccelClassifier {
 
         double p = Double.NaN;
         p = WekaAccelClassifier.Nafdcf6d5(i);
-        return p;
+        if(p > 0) //se p== 1
+            return 0.0;
+        else return 1.0; //se p==0
     }
     static double Nafdcf6d5(Object []i) {
         double p = Double.NaN;

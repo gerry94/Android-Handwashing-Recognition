@@ -28,6 +28,9 @@ public class MotionSensor {
         z.add(vz);
     }
 
+    public int getNumData() {
+        return this.x.size();
+    }
     private double computeMean(List<Double> list) {
         double sum = 0;
         int count;

@@ -1,5 +1,6 @@
 package com.example.sensortest;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -10,40 +11,39 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Environment;
-import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.util.*;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "MainActivity";
-    final int SAMPLING = 2000000; //microseconds
+
     private SensorManager sensorManager;
     private Sensor accelerometer, gyroscope;
-    TextView accx, accy, accz, gyrx, gyry, gyrz;
+    TextView txt, txt2;
     View view;
-    //File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-    //File accelFile = new File(path, "accelData.csv");
-    //File gyrFile = new File(path, "gyrData.csv");
+
+    //contains the results of the classifier during a time window in which the user might be washing hands
+    List<Double> accelVector = new ArrayList<>(Collections.nCopies(10, 0.0));
+    int accelInserts = 0;
+
+    List<Double> gyroVector = new ArrayList<>(Collections.nCopies(10, 0.0));
+    int gyroInserts = 0;
+
+    final int SAMPLING = 2000000; //microseconds corresponding to 50Hz
+
+    //provare come cambia il classificatore al variare di THRESHOLD e OVERLAP
+    final int THRESHOLD = 7;
+    final double OVERLAP = 0.5; //50% overlapped windows
+
+    final double ACC_WEIGHT = 0.96;
+    final double GYR_WEIGHT = 0.8;
+    final int WINDOW_SIZE = 50;
 
     MotionSensor accelData = new MotionSensor();
     MotionSensor gyrData = new MotionSensor();
-
-    int numAccelData = 0, numGyrData = 0;
-
-    WekaAccelClassifier accelClassifier = new WekaAccelClassifier();
-    WekaGyroClassifier gyroClassifier = new WekaGyroClassifier();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,111 +51,147 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         view = this.getWindow().getDecorView();
 
-        accx = (TextView) findViewById(R.id.textBox);
-        /*accy = (TextView) findViewById(R.id.yValue);
-        accz = (TextView) findViewById(R.id.zValue);
+        txt = (TextView) findViewById(R.id.textBox);
+        txt2 = (TextView) findViewById(R.id.textBox2);
 
-        gyrx = (TextView) findViewById(R.id.xGyrValue);
-        gyry = (TextView) findViewById(R.id.yGyrValue);
-        gyrz = (TextView) findViewById(R.id.zGyrValue);*/
-
-        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
+        txt.setText("ACC = ");
+        txt2.setText("GYR = ");
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         sensorManager.registerListener(MainActivity.this, accelerometer, SAMPLING); //sampling expressed in micro-seconds
         sensorManager.registerListener(MainActivity.this, gyroscope, SAMPLING);
-/*
-        try {
-            FileOutputStream f = new FileOutputStream(accelFile, true);
-            String data = "ACC_X,ACC_Y,ACC_Z";
-            OutputStreamWriter o = new OutputStreamWriter(f);
-            o.append(data+"\n");
-            o.close();
-            f.close();
-
-            FileOutputStream ff = new FileOutputStream(gyrFile, true);
-            data = "GYR_X,GYR_Y,GYR_Z";
-            OutputStreamWriter oo = new OutputStreamWriter(ff);
-            oo.append(data+"\n");
-            oo.close();
-            ff.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
 
     }
 
+    private void overlap(List<Double> list, double window) {
+        List<Double> app = new ArrayList<>();
+
+        for(int i = (int)Math.floor(list.size()*window); i<list.size(); i++)
+            app.add(list.get(i));
+
+        list.clear();
+
+        for(double num: app)
+            list.add(num);
+    }
+
+    public void print(TextView t, String beginning, List<Double> l) {
+        t.setText(beginning+" = [");
+
+        for(double num: l)
+            t.append((int)num+", ");
+        t.append("]");
+    }
+
+    private double computeWeightedSums() {
+        double s1 = 0, s2 = 0;
+        for(double num: accelVector)
+            s1 = s1+num;
+        for(double num: gyroVector)
+            s2 = s2+num;
+
+        return ( (s1*ACC_WEIGHT)+(s2*GYR_WEIGHT) );
+    }
+
+    @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor sensor = event.sensor;
 
-        if(sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-
-            /*accy.setText("ACCEL_Y: " + event.values[1]);
-            accz.setText("ACCEL_Z: " + event.values[2]);*/
-
+        if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             accelData.add(event.values[0], event.values[1], event.values[2]);
-            numAccelData++;
 
-            if(numAccelData == 50) {
+            if (accelData.getNumData() == WINDOW_SIZE) {
                 accelData.computeFeatures();
                 try {
-                    if(accelClassifier.classify(accelData.getFeatures()) > 0)
-                        view.setBackgroundColor(Color.argb(255, 255, 0, 0));
-                    else view.setBackgroundColor(Color.argb(255, 0, 255, 0));
+                    Double result = WekaAccelClassifier.classify(accelData.getFeatures());
 
+                    //inserting at the end, popping the first element
+                    accelVector.add(result);
+                    accelVector.remove(0);
+                    accelInserts++;
+
+                    //only for debug purposes
+                    print(txt, "ACC", accelVector);
+
+                    if(accelInserts == OVERLAP*10) {
+                        if( computeWeightedSums()/2 >= THRESHOLD ) {
+                            view.setBackgroundColor(Color.argb(255, 0, 255, 0));
+                            //accelInserts = 0;
+                        } else view.setBackgroundColor(Color.argb(255, 255, 0, 0));
+                        accelInserts = 0;
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 accelData.flush();
-                numAccelData = 0;
             }
-            /*String data = event.values[0] +","+ event.values[1] +","+ event.values[2];
+        } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            gyrData.add(event.values[0], event.values[1], event.values[2]);
+
+            if (gyrData.getNumData() == WINDOW_SIZE) {
+                gyrData.computeFeatures();
+                try {
+                    Double result = WekaGyroClassifier.classify(gyrData.getFeatures());
+                    gyroVector.add(result);
+                    gyroVector.remove(0);
+                    gyroInserts++;
+
+                    //only for debug purposes
+                    print(txt2, "GYR", gyroVector);
+                    if(gyroInserts == OVERLAP*10) {
+                        if( computeWeightedSums()/2 >= THRESHOLD ) {
+                            view.setBackgroundColor(Color.argb(255, 0, 255, 0));
+                        } else view.setBackgroundColor(Color.argb(255, 255, 0, 0));
+                        gyroInserts = 0;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                gyrData.flush();
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
+}
+
+/*
+accx = (TextView) findViewById(R.id.xValue);
+        accy = (TextView) findViewById(R.id.yValue);
+        accz = (TextView) findViewById(R.id.zValue);
+
+        gyrx = (TextView) findViewById(R.id.xGyrValue);
+        gyry = (TextView) findViewById(R.id.yGyrValue);
+        gyrz = (TextView) findViewById(R.id.zGyrValue);
+try {
+        FileOutputStream f = new FileOutputStream(accelFile, true);
+        String data = "ACC_X,ACC_Y,ACC_Z";
+        OutputStreamWriter o = new OutputStreamWriter(f);
+        o.append(data+"\n");
+        o.close();
+        f.close();
+
+        FileOutputStream ff = new FileOutputStream(gyrFile, true);
+        data = "GYR_X,GYR_Y,GYR_Z";
+        OutputStreamWriter oo = new OutputStreamWriter(ff);
+        oo.append(data+"\n");
+        oo.close();
+        ff.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+
+    String data = event.values[0] +","+ event.values[1] +","+ event.values[2];
             try {
                 FileOutputStream f = new FileOutputStream(accelFile, true);
                 OutputStreamWriter o = new OutputStreamWriter(f);
                 o.append(data+"\n");
                 o.close();
                 f.close();
-            } catch(IOException e) { e.printStackTrace();}*/
-        } else if(sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            gyrData.add(event.values[0], event.values[1], event.values[2]);
-            numGyrData++;
-
-            if(numGyrData == 50) {
-                gyrData.computeFeatures();
-                try {
-                    accx.setText("GYR: "+gyroClassifier.classify(gyrData.getFeatures()) );
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                gyrData.flush();
-                numGyrData =0;
-            }
-            /*gyrx.setText("GYR_X: " + event.values[0]);
-            gyry.setText("GYR_Y: " + event.values[1]);
-            gyrz.setText("GYR_Z: " + event.values[2]);
-            String data = event.values[0] +","+ event.values[1] +","+ event.values[2];
-            try {
-                FileOutputStream f = new FileOutputStream(gyrFile, true);
-                OutputStreamWriter o = new OutputStreamWriter(f);
-                o.append(data+"\n");
-                o.close();
-                f.close();
-            } catch(IOException e) { e.printStackTrace();}*/
-        }
-
-        /* pseudo-codcie
-        if(numData == 50)
-            computeFeatures()
-            getFeatures()
-            flush()
-         */
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
-}
+            } catch(IOException e) { e.printStackTrace();}
+ */

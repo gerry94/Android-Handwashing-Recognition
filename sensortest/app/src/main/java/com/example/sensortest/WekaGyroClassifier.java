@@ -7,7 +7,9 @@ public class WekaGyroClassifier {
 
         double p = Double.NaN;
         p = WekaGyroClassifier.N27071a0432(i);
-        return p;
+        if(p > 0) //se p== 1
+            return 0.0;
+        else return 1.0; //se p==0
     }
     static double N27071a0432(Object []i) {
         double p = Double.NaN;
