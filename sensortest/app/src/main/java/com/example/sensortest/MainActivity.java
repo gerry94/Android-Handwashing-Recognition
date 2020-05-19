@@ -8,11 +8,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.os.Environment;
 import android.util.Log;
@@ -55,9 +51,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         view = this.getWindow().getDecorView();
 
-        accx = (TextView) findViewById(R.id.xValue);
-        accy = (TextView) findViewById(R.id.yValue);
-        /*accz = (TextView) findViewById(R.id.zValue);
+        accx = (TextView) findViewById(R.id.textBox);
+        /*accy = (TextView) findViewById(R.id.yValue);
+        accz = (TextView) findViewById(R.id.zValue);
 
         gyrx = (TextView) findViewById(R.id.xGyrValue);
         gyry = (TextView) findViewById(R.id.yGyrValue);

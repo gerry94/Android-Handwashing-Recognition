@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SensorTest.iml" filepath="$PROJECT_DIR$/SensorTest.iml" group="SensorTest" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="SensorTest/app" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="sensortest/app" />
+      <module fileurl="file://$PROJECT_DIR$/sensortest.iml" filepath="$PROJECT_DIR$/sensortest.iml" group="sensortest" />
     </modules>
   </component>
 </project>
