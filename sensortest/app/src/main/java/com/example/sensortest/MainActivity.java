@@ -11,9 +11,15 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Environment;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.*;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
@@ -45,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     MotionSensor accelData = new MotionSensor();
     MotionSensor gyrData = new MotionSensor();
 
+    /*File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    File accelFile = new File(path, "accelData.csv");
+    File gyrFile = new File(path, "gyrData.csv");*/
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager.registerListener(MainActivity.this, accelerometer, SAMPLING); //sampling expressed in micro-seconds
         sensorManager.registerListener(MainActivity.this, gyroscope, SAMPLING);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     }
 
@@ -104,6 +116,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             accelData.add(event.values[0], event.values[1], event.values[2]);
 
+            /*try {
+                FileOutputStream f = new FileOutputStream(accelFile, true);
+                OutputStreamWriter o = new OutputStreamWriter(f);
+                o.append(event.values[0] +","+ event.values[1] +","+ event.values[2]+"\n");
+                o.close();
+                f.close();
+            } catch(IOException e) { e.printStackTrace();}*/
+
             if (accelData.getNumData() == WINDOW_SIZE) {
                 accelData.computeFeatures();
                 try {
@@ -132,6 +152,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             gyrData.add(event.values[0], event.values[1], event.values[2]);
 
+            /*try {
+                FileOutputStream f = new FileOutputStream(gyrFile, true);
+                OutputStreamWriter o = new OutputStreamWriter(f);
+                o.append(event.values[0] +","+ event.values[1] +","+ event.values[2]+"\n");
+                o.close();
+                f.close();
+            } catch(IOException e) { e.printStackTrace();}*/
+
             if (gyrData.getNumData() == WINDOW_SIZE) {
                 gyrData.computeFeatures();
                 try {
@@ -159,39 +187,3 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 }
-
-/*
-accx = (TextView) findViewById(R.id.xValue);
-        accy = (TextView) findViewById(R.id.yValue);
-        accz = (TextView) findViewById(R.id.zValue);
-
-        gyrx = (TextView) findViewById(R.id.xGyrValue);
-        gyry = (TextView) findViewById(R.id.yGyrValue);
-        gyrz = (TextView) findViewById(R.id.zGyrValue);
-try {
-        FileOutputStream f = new FileOutputStream(accelFile, true);
-        String data = "ACC_X,ACC_Y,ACC_Z";
-        OutputStreamWriter o = new OutputStreamWriter(f);
-        o.append(data+"\n");
-        o.close();
-        f.close();
-
-        FileOutputStream ff = new FileOutputStream(gyrFile, true);
-        data = "GYR_X,GYR_Y,GYR_Z";
-        OutputStreamWriter oo = new OutputStreamWriter(ff);
-        oo.append(data+"\n");
-        oo.close();
-        ff.close();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-
-    String data = event.values[0] +","+ event.values[1] +","+ event.values[2];
-            try {
-                FileOutputStream f = new FileOutputStream(accelFile, true);
-                OutputStreamWriter o = new OutputStreamWriter(f);
-                o.append(data+"\n");
-                o.close();
-                f.close();
-            } catch(IOException e) { e.printStackTrace();}
- */
