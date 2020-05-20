@@ -21,3 +21,9 @@
 ## 19-05 (couple of hours after dinner)
 * individual activity: tweaking of classifier precision by implementing overlapped windows of classification
 * tests around the house
+
+## 20-05 (all afternoon)
+* meeting with professor
+* meeting with other groups for merging
+* tweaking of classificator parameters
+* data collection around the house (1h of data)
