@@ -58,12 +58,13 @@ public class MainActivity extends AppCompatActivity {
 
 
         receiver = new ConnectionReceiver();
-        intentFilter = new IntentFilter("SOME_ACTION");
+        //intentFilter = new IntentFilter("SOME_ACTION");
     }
 
+    //L'invio dell'intent in realtà sarà quando viene riconosciuto lavaggio mani
     public void sendMessage(View view) {
-        Intent intent = new Intent("SOME_ACTION");
-        sendBroadcast(intent);
+        Intent intentWashing = new Intent("handWashed");
+        sendBroadcast(intentWashing);
         Log.d("MSG","Intent sent in broadcast");
     }
 }
