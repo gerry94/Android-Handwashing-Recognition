@@ -19,7 +19,8 @@
         </activity>
         <receiver android:name=".ConnectionReceiver">
             <intent-filter>
-                <action android:name="SOME_ACTION" />
+                <action android:name="handWashed" />
+                <action android:name="ACTION_PROXIMITY_ALERT" />
             </intent-filter>
         </receiver>
     </application>
