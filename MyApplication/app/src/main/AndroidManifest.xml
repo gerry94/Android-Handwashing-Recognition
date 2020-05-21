@@ -20,7 +20,7 @@
         <receiver android:name=".ConnectionReceiver">
             <intent-filter>
                 <action android:name="handWashed" />
-                <action android:name="ACTION_PROXIMITY_ALERT" />
+                <action android:name="home_proximity" />
             </intent-filter>
         </receiver>
     </application>

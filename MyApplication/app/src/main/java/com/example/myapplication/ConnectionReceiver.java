@@ -22,9 +22,9 @@ public class ConnectionReceiver extends BroadcastReceiver {
 
         Log.d("MSG","Ricevuto intent..."+intent.getAction());
 
-        if(intent.getAction().equals("ACTION_PROXIMITY_ALERT")) {
+        if(intent.getAction().equals("home_proximity")) {
 
-            Toast.makeText(context, "ACTION_PROXIMITY_ALERT is received", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "home_proximity is received", Toast.LENGTH_LONG).show();
 
             //controllare se ritorno a casa o se sta andando via con campo KEY_PROXIMITY_ENTERING (è lo stesso intent)
             key = LocationManager.KEY_PROXIMITY_ENTERING;
