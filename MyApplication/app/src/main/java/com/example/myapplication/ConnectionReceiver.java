@@ -4,9 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +19,10 @@ public class ConnectionReceiver extends BroadcastReceiver {
 
     String key = null;
     Boolean entering = true;
+
+    File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+    File accelFile = new File(path, "accelData.csv");
+    File gyrFile = new File(path, "gyrData.csv");
 
     final int MIN_ACTIVITY_TIME = 10; //time that the user SHOULD take to perform the desired activity (in seconds)
 
@@ -55,8 +61,8 @@ public class ConnectionReceiver extends BroadcastReceiver {
                 Log.d("TEST","Rientrato a casa");
                 try {
                     //read csv file (first 15mins) and classify
-                    BufferedReader br = new BufferedReader(new FileReader("data/accelData.csv"));
-                    BufferedReader br2 = new BufferedReader(new FileReader("data/gyrData.csv"));
+                    BufferedReader br = new BufferedReader(new FileReader(accelFile));
+                    BufferedReader br2 = new BufferedReader(new FileReader(gyrFile));
                     String separator = ",", line = br.readLine(), line2 = br2.readLine();
 
                     int linesRead = 0;
