@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -38,12 +39,6 @@ public class ConnectionReceiver extends BroadcastReceiver {
     MotionSensor accelData = new MotionSensor();
     MotionSensor gyrData = new MotionSensor();
 
-    public void sendIntent(Context context) {
-        Intent intentWashing = new Intent("handWashed");
-        context.sendBroadcast(intentWashing);
-        Log.d("MSG","Intent sent in broadcast");
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
 
@@ -51,13 +46,14 @@ public class ConnectionReceiver extends BroadcastReceiver {
 
         if(intent.getAction().equals("home_proximity")) {
             Toast.makeText(context, "home_proximity is received", Toast.LENGTH_LONG).show();
-
+            Log.d("TEST","home_proximity ricevuto");
             //controllare se ritorno a casa o se sta andando via con campo KEY_PROXIMITY_ENTERING (è lo stesso intent)
             key = LocationManager.KEY_PROXIMITY_ENTERING;
             entering = intent.getBooleanExtra(key, false);
 
             //se rientro a casa
             if(entering) {
+                Log.d("TEST","Rientrato a casa");
                 try {
                     //read csv file (first 15mins) and classify
                     BufferedReader br = new BufferedReader(new FileReader("data/accelData.csv"));
@@ -139,12 +135,20 @@ public class ConnectionReceiver extends BroadcastReceiver {
                 } catch(IOException e) { e.printStackTrace(); }
             } else {
                 //se invece sta uscendo da casa, non faccio nulla e mi rimetto in ricezione
+                Log.d("TEST","utente uscito da casa");
                 Toast.makeText(context, "Utente uscito da casa", Toast.LENGTH_LONG).show();
             }
         }
         else {
             //Ricevuto intent non di interesse
+            Log.d("TEST","Altro intent ricevuto");
             Toast.makeText(context, "Some other action received", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void sendIntent(Context context) {
+        Intent intentWashing = new Intent("handWashed");
+        context.sendBroadcast(intentWashing);
+        Log.d("MSG","Intent handWashed");
     }
 }

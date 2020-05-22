@@ -17,7 +17,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".ConnectionReceiver">
+        <receiver
+            android:name=".ConnectionReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="handWashed" />
                 <action android:name="home_proximity" />
