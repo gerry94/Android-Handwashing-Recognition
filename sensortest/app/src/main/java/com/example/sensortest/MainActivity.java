@@ -40,9 +40,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     final int SAMPLING = 2000000; //microseconds corresponding to 50Hz
 
-    //provare come cambia il classificatore al variare di THRESHOLD e OVERLAP
-    final int THRESHOLD = 7;
+    final int MIN_ACTIVITY_TIME = 10; //time that the user SHOULD take to perform the desired activity (in seconds)
+    final double THRESHOLD = 0.7*MIN_ACTIVITY_TIME; //70% of ideal activity time
     final double OVERLAP = 0.5; //50% overlapped windows
+
 
     final double ACC_WEIGHT = 0.96;
     final double GYR_WEIGHT = 0.8;
@@ -61,11 +62,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         view = this.getWindow().getDecorView();
 
-        txt = (TextView) findViewById(R.id.textBox);
-        txt2 = (TextView) findViewById(R.id.textBox2);
+        //txt = (TextView) findViewById(R.id.textBox);
+        //txt2 = (TextView) findViewById(R.id.textBox2);
 
-        txt.setText("ACC = ");
-        txt2.setText("GYR = ");
+        //txt.setText("ACC = ");
+        //txt2.setText("GYR = ");
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -116,14 +117,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             accelData.add(event.values[0], event.values[1], event.values[2]);
 
-            /*try {
-                FileOutputStream f = new FileOutputStream(accelFile, true);
-                OutputStreamWriter o = new OutputStreamWriter(f);
-                o.append(event.values[0] +","+ event.values[1] +","+ event.values[2]+"\n");
-                o.close();
-                f.close();
-            } catch(IOException e) { e.printStackTrace();}*/
-
             if (accelData.getNumData() == WINDOW_SIZE) {
                 accelData.computeFeatures();
                 try {
@@ -135,12 +128,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     accelInserts++;
 
                     //only for debug purposes
-                    print(txt, "ACC", accelVector);
+                    //print(txt, "ACC", accelVector);
 
-                    if(accelInserts == OVERLAP*10) {
+                    if(accelInserts == OVERLAP*MIN_ACTIVITY_TIME) {
                         if( computeWeightedSums()/2 >= THRESHOLD ) {
                             view.setBackgroundColor(Color.argb(255, 0, 255, 0));
-                            //accelInserts = 0;
                         } else view.setBackgroundColor(Color.argb(255, 255, 0, 0));
                         accelInserts = 0;
                     }
@@ -152,14 +144,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
             gyrData.add(event.values[0], event.values[1], event.values[2]);
 
-            /*try {
-                FileOutputStream f = new FileOutputStream(gyrFile, true);
-                OutputStreamWriter o = new OutputStreamWriter(f);
-                o.append(event.values[0] +","+ event.values[1] +","+ event.values[2]+"\n");
-                o.close();
-                f.close();
-            } catch(IOException e) { e.printStackTrace();}*/
-
             if (gyrData.getNumData() == WINDOW_SIZE) {
                 gyrData.computeFeatures();
                 try {
@@ -169,8 +153,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     gyroInserts++;
 
                     //only for debug purposes
-                    print(txt2, "GYR", gyroVector);
-                    if(gyroInserts == OVERLAP*10) {
+                    //print(txt2, "GYR", gyroVector);
+                    if(gyroInserts == OVERLAP*MIN_ACTIVITY_TIME) {
                         if( computeWeightedSums()/2 >= THRESHOLD ) {
                             view.setBackgroundColor(Color.argb(255, 0, 255, 0));
                         } else view.setBackgroundColor(Color.argb(255, 255, 0, 0));
