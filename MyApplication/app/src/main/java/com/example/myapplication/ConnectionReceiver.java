@@ -3,7 +3,6 @@ package com.example.myapplication;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.LocationManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -49,7 +48,7 @@ public class ConnectionReceiver extends BroadcastReceiver {
             Log.d("TEST","home_proximity ricevuto");
             //controllare se ritorno a casa o se sta andando via con campo KEY_PROXIMITY_ENTERING (è lo stesso intent)
             key = LocationManager.KEY_PROXIMITY_ENTERING;
-            entering = intent.getBooleanExtra(key, false);
+            entering = intent.getBooleanExtra(key, true);
 
             //se rientro a casa
             if(entering) {
